@@ -11,6 +11,7 @@ import (
 	"VK_app/server/postgresql"
 	st "VK_app/server/structures"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -25,47 +26,30 @@ import (
 // @Success 200 {string} string "ok"
 // @Failure 400 {string} string "bad request"
 // @Failure 404 {string} string "not found"
-// @Router /login [post]
+// @Router /filmlibrary/login [post]
 
-// Login handles the user login process by decoding the request body, checking credentials, and generating a JWT token for authorization.
-//
-// Parameters:
-//   - w: http.ResponseWriter to send responses.
-//   - r: http.Request containing the user login information.
-//
-// Returns nothing.
-func Login(w http.ResponseWriter, r *http.Request) {
+func Login(c *gin.Context) {
 	var user st.User
-	var buf bytes.Buffer
-	_, err := buf.ReadFrom(r.Body)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &user); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	// ищем пользователя в базе данных
+
 	var storedPassword string
-	// забираем пароль и id пользователя из базы данных
 	row := l.Db.QueryRow("SELECT password FROM filmsactors.users WHERE login = $1", user.Login)
-	err = row.Scan(&storedPassword)
-	// если пользователь не найден
+	err := row.Scan(&storedPassword)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Login is wrong", http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Login is wrong"})
 		return
 	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(user.Password))
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Password is", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Password is wrong"})
 		return
 	}
-	user.Password = storedPassword
+
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"login":          user.Login,
 		"hashedpassword": user.Password,
@@ -76,11 +60,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	SignedToken, err := jwtToken.SignedString(st.Secret)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
 		return
 	}
-	w.Header().Set("Authorization", SignedToken)
-	w.WriteHeader(http.StatusOK)
+
+	c.Header("Authorization", SignedToken)
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
 
 // @Summary Register
@@ -102,28 +87,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 //   - r: *http.Request
 //
 // Return type: void
-func RegisterUser(w http.ResponseWriter, r *http.Request) {
+func RegisterUser(c *gin.Context) {
 	var user st.User
-	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	if err := c.ShouldBindJSON(&user); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := postgresql.AddUser(&user)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &user); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = postgresql.AddUser(&user)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+	c.JSON(http.StatusCreated, gin.H{"message": "created"})
 }
 
 // @Summary AddFilm
@@ -145,30 +122,22 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 // unmarshals the request body into a Film struct, and adds the Film to the
 // database. If there is an error, it sends an appropriate HTTP response
 // with an error message.
-func PostFilm(w http.ResponseWriter, r *http.Request) {
+func PostFilm(c *gin.Context) {
 	var film st.Film
-	var buf bytes.Buffer
-	// read the request body
-	_, err := buf.ReadFrom(r.Body)
+	if err := c.ShouldBindJSON(&film); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := postgresql.AddFilm(film)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// unmarshal the request body into a Film struct
-	if err = json.Unmarshal(buf.Bytes(), &film); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	// add the Film to the database
-	err = postgresql.AddFilm(film)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+
+	c.JSON(http.StatusCreated, gin.H{"message": "created"})
 }
 
 // @Summary AddActor
@@ -188,28 +157,22 @@ func PostFilm(w http.ResponseWriter, r *http.Request) {
 //
 // It takes in the http.ResponseWriter and http.Request as parameters.
 // It does not return anything.
-func PostActor(w http.ResponseWriter, r *http.Request) {
+func PostActor(c *gin.Context) {
 	var actor st.Actor
-	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	if err := c.ShouldBindJSON(&actor); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := postgresql.AddActor(actor)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &actor); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = postgresql.AddActor(actor)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+
+	c.JSON(http.StatusCreated, gin.H{"message": "created"})
 }
 
 // @Summary UpdateActor
@@ -229,25 +192,18 @@ func PostActor(w http.ResponseWriter, r *http.Request) {
 //
 // Parameters: w http.ResponseWriter, r *http.Request
 // Return type: None
-func UpdateActor(w http.ResponseWriter, r *http.Request) {
+
+func UpdateActor(c *gin.Context) {
 	var actor st.Actor
-	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
-	if err != nil {
+	if err := c.ShouldBindJSON(&actor); err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &actor); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = postgresql.UpdateActor(actor)
+	err := postgresql.UpdateActor(actor)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 }
@@ -270,25 +226,18 @@ func UpdateActor(w http.ResponseWriter, r *http.Request) {
 // Parameters:
 //   - w: http.ResponseWriter
 //   - r: http.Request
-func DeleteActor(w http.ResponseWriter, r *http.Request) {
+
+func DeleteActor(c *gin.Context) {
 	var actor st.Actor
-	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
-	if err != nil {
+	if err := c.ShouldBindJSON(&actor); err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &actor); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = postgresql.DelActor(actor.Id)
+	err := postgresql.DelActor(actor.Id)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 }
@@ -310,25 +259,18 @@ func DeleteActor(w http.ResponseWriter, r *http.Request) {
 //
 // Parameters: w http.ResponseWriter, r *http.Request
 // Return type: None
-func UpdateFilm(w http.ResponseWriter, r *http.Request) {
+
+func UpdateFilm(c *gin.Context) {
 	var film st.Film
-	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
-	if err != nil {
+	if err := c.ShouldBindJSON(&film); err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &film); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = postgresql.UpdateFilm(film)
+	err := postgresql.UpdateFilm(film)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 }
@@ -352,25 +294,18 @@ func UpdateFilm(w http.ResponseWriter, r *http.Request) {
 //
 //	w http.ResponseWriter - the response writer
 //	r *http.Request - the incoming request
-func DeleteFilm(w http.ResponseWriter, r *http.Request) {
+
+func DeleteFilm(c *gin.Context) {
 	var film st.Film
-	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
-	if err != nil {
+	if err := c.ShouldBindJSON(&film); err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &film); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = postgresql.DelFilm(film.Id)
+	err := postgresql.DelFilm(film.Id)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 }
@@ -392,14 +327,14 @@ func DeleteFilm(w http.ResponseWriter, r *http.Request) {
 //
 // Parameters: w http.ResponseWriter, r *http.Request
 // Return type: None
-func GetSortedFilms(w http.ResponseWriter, r *http.Request) {
+func GetSortedFilms(c *gin.Context) {
 	var films []st.Film
 	var buf bytes.Buffer
 	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	_, err := buf.ReadFrom(c.Request.Body)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	piece := buf.String()
@@ -412,16 +347,10 @@ func GetSortedFilms(w http.ResponseWriter, r *http.Request) {
 	}
 	if films == nil {
 		log.Println("No films found")
-		http.Error(w, "No films found", http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"error": "No films found"})
 		return
 	}
-	filmsJSON, err := json.Marshal(films)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(filmsJSON)
+	c.JSON(http.StatusOK, films)
 }
 
 // @Summary GetFilmByPiece
@@ -439,20 +368,20 @@ func GetSortedFilms(w http.ResponseWriter, r *http.Request) {
 
 // GetFilmByPiece is a Go function to retrieve films based on a JSON fragment.
 // It takes a http.ResponseWriter and *http.Request as parameters and does not return anything.
-func GetFilmByPiece(w http.ResponseWriter, r *http.Request) {
+func GetFilmByPiece(c *gin.Context) {
 	var JSONInput st.JSONFragment
 	var films []st.Film
 	var buf bytes.Buffer
 	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	_, err := buf.ReadFrom(c.Request.Body)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	if err = json.Unmarshal(buf.Bytes(), &JSONInput); err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -463,15 +392,10 @@ func GetFilmByPiece(w http.ResponseWriter, r *http.Request) {
 	}
 	if films == nil {
 		log.Println("No films found")
-		http.Error(w, "No films found", http.StatusNotFound)
-	}
-	filmsJSON, err := json.Marshal(films)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusNotFound, gin.H{"error": "No films found"})
 		return
 	}
-	w.Write(filmsJSON)
+	c.JSON(http.StatusOK, films)
 }
 
 // @Summary GetAllActors
@@ -493,17 +417,10 @@ func GetFilmByPiece(w http.ResponseWriter, r *http.Request) {
 // - r: an http.Request object representing the incoming request.
 //
 // Returns: None.
-func GetAllActors(w http.ResponseWriter, r *http.Request) {
+func GetAllActors(c *gin.Context) {
 	actors := postgresql.GetFilmsActor()
-	actorsJSON, err := json.Marshal(actors)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(actorsJSON)
+	c.JSON(http.StatusOK, actors)
 }
-
 
 // @Summary GetSortedFilmsAdmin
 // @Security AdminKeyAuth
@@ -522,14 +439,15 @@ func GetAllActors(w http.ResponseWriter, r *http.Request) {
 //
 // Parameters: w http.ResponseWriter, r *http.Request
 // Return type: None
-func GetSortedFilmsAdmin(w http.ResponseWriter, r *http.Request) {
+
+func GetSortedFilmsAdmin(c *gin.Context) {
 	var films []st.Film
 	var buf bytes.Buffer
 	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	_, err := buf.ReadFrom(c.Request.Body)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	piece := buf.String()
@@ -542,16 +460,10 @@ func GetSortedFilmsAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	if films == nil {
 		log.Println("No films found")
-		http.Error(w, "No films found", http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"error": "No films found"})
 		return
 	}
-	filmsJSON, err := json.Marshal(films)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(filmsJSON)
+	c.JSON(http.StatusOK, films)
 }
 
 // @Summary GetFilmByPieceAdmin
@@ -561,7 +473,7 @@ func GetSortedFilmsAdmin(w http.ResponseWriter, r *http.Request) {
 // @ID get-film-by-piece
 // @Accept json
 // @Produce json
-// @Param input body st.JSONFragment true "JSON fragment containing a piece of the film name or actor name to be searched for" 
+// @Param input body st.JSONFragment true "JSON fragment containing a piece of the film name or actor name to be searched for"
 // @Success 200 {string} string "ok"
 // @Failure 400 {string} string "bad request"
 // @Failure 404 {string} string "not found"
@@ -569,20 +481,19 @@ func GetSortedFilmsAdmin(w http.ResponseWriter, r *http.Request) {
 
 // GetFilmByPiece is a Go function to retrieve films based on a JSON fragment.
 // It takes a http.ResponseWriter and *http.Request as parameters and does not return anything.
-func GetFilmByPieceAdmin(w http.ResponseWriter, r *http.Request) {
+func GetFilmByPieceAdmin(c *gin.Context) {
 	var JSONInput st.JSONFragment
 	var films []st.Film
 	var buf bytes.Buffer
-	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	_, err := buf.ReadFrom(c.Request.Body)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	if err = json.Unmarshal(buf.Bytes(), &JSONInput); err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -593,15 +504,10 @@ func GetFilmByPieceAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	if films == nil {
 		log.Println("No films found")
-		http.Error(w, "No films found", http.StatusNotFound)
-	}
-	filmsJSON, err := json.Marshal(films)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusNotFound, gin.H{"error": "No films found"})
 		return
 	}
-	w.Write(filmsJSON)
+	c.JSON(http.StatusOK, films)
 }
 
 // @Summary GetAllActors
@@ -623,13 +529,7 @@ func GetFilmByPieceAdmin(w http.ResponseWriter, r *http.Request) {
 // - r: an http.Request object representing the incoming request.
 //
 // Returns: None.
-func GetAllActorsAdmin(w http.ResponseWriter, r *http.Request) {
+func GetAllActorsAdmin(c *gin.Context) {
 	actors := postgresql.GetFilmsActor()
-	actorsJSON, err := json.Marshal(actors)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(actorsJSON)
+	c.JSON(http.StatusOK, actors)
 }

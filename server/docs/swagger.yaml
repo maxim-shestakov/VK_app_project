@@ -1,0 +1,18 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  description: VK_app_film_library project
+  title: VK Film library
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  AdminKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

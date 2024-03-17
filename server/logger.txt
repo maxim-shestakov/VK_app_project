@@ -41,3 +41,4 @@ PREFIX: 2024/03/15 16:33:45 Logging to a file
 2024/03/17 20:30:54 [36m"[0m[35;1mGET [0m[36mhttp://localhost:8080/filmlibrary/swagger HTTP/1.1" [0mfrom [::1]:63483 - [33;1m404[0m[34;1m 19B[0m in [32m23.0853ms[0m
 2024/03/17 20:46:03 [36m"[0m[35;1mGET [0m[36mhttp://localhost:8080/filmlibrary/admin/actors HTTP/1.1" [0mfrom [::1]:61012 - [32;1m200[0m[34;1m 773B[0m in [32m49.7322ms[0m
 2024/03/17 20:46:08 [36m"[0m[35;1mGET [0m[36mhttp://localhost:8080/filmlibrary/admin/actors HTTP/1.1" [0mfrom [::1]:61012 - [32;1m200[0m[34;1m 773B[0m in [32m1.551ms[0m
+2024/03/17 21:39:57 user was appended successfully

@@ -7,16 +7,14 @@ import (
 	h "VK_app/server/handlers"
 
 	logger "VK_app/server/logger"
-	middle "VK_app/server/middlewear"
 
+	_ "VK_app/server/docs"
+	middle "VK_app/server/middlewear"
 	"log"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
-	"github.com/swaggo/files" // swagger embed files
-	_ "VK_app/docs"
 	gin "github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"     // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
 // @title VK Film library
@@ -24,7 +22,7 @@ import (
 // @description VK_app_film_library project
 
 // @host localhost:8080
-// @BasePath /filmlibrary
+// @BasePath /
 
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
@@ -48,36 +46,36 @@ func main() {
 	defer l.Db.Close()
 	logger.LogFile = logger.LoggerInit()
 	defer logger.LogFile.Close()
-	loggerOut := log.New(logger.LogFile, "", log.LstdFlags)
 	log.SetOutput(logger.LogFile)
-	r := chi.NewRouter()
-	swaggerRouter:=gin.Default()
-	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: loggerOut}))
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Post("/filmlibrary/registration", h.RegisterUser)
-	r.Post("/filmlibrary/login", h.Login)
-	r.Group(func(rUser chi.Router) {
-		rUser.Use(middle.CheckToken)
-		rUser.Post("/filmlibrary/filmssorted", h.GetSortedFilms)
-		rUser.Post("/filmlibrary/filmspiece", h.GetFilmByPiece)
-		rUser.Get("/filmlibrary/actors", h.GetAllActors)
-	})
-	r.Group(func(rAdm chi.Router) {
-		rAdm.Use(middle.CheckTokenAdmin)
-		rAdm.Delete("/filmlibrary/admin/film", h.DeleteFilm)
-		rAdm.Put("/filmlibrary/admin/film", h.UpdateFilm)
-		rAdm.Delete("/filmlibrary/admin/actor", h.DeleteActor)
-		rAdm.Put("/filmlibrary/admin/actor", h.UpdateActor)
-		rAdm.Post("/filmlibrary/admin/actors", h.PostActor)
-		rAdm.Post("/filmlibrary/admin/films", h.PostFilm)
-		rAdm.Post("/filmlibrary/admin/filmssorted", h.GetSortedFilmsAdmin)
-		rAdm.Post("/filmlibrary/admin/filmspiece", h.GetFilmByPieceAdmin)
-		rAdm.Get("/filmlibrary/admin/actors", h.GetAllActorsAdmin)
-	})
-	swaggerRouter.GET("filmlibrary/swagger", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	swaggerRouter := gin.Default()
+	swaggerRouter.Use(gin.Logger())
+	swaggerRouter.Use(gin.Logger())
+	swaggerRouter.Use(gin.Recovery())
 
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	swaggerRouter.POST("/filmlibrary/registration", h.RegisterUser)
+	swaggerRouter.POST("/filmlibrary/login", h.Login)
+
+	UserGroup := swaggerRouter.Group("/filmlibrary")
+	UserGroup.Use(middle.CheckToken)
+	UserGroup.POST("/filmssorted", h.GetSortedFilms)
+	UserGroup.POST("/filmspiece", h.GetFilmByPiece)
+	UserGroup.GET("/actors", h.GetAllActors)
+
+	AdminGroup := swaggerRouter.Group("/filmlibrary/admin")
+	AdminGroup.Use(middle.CheckTokenAdmin)
+	AdminGroup.DELETE("/film", h.DeleteFilm)
+	AdminGroup.PUT("/film", h.UpdateFilm)
+	AdminGroup.DELETE("/actor", h.DeleteActor)
+	AdminGroup.PUT("/actor", h.UpdateActor)
+	AdminGroup.POST("/actors", h.PostActor)
+	AdminGroup.POST("/films", h.PostFilm)
+	AdminGroup.POST("/filmssorted", h.GetSortedFilmsAdmin)
+	AdminGroup.POST("/filmspiece", h.GetFilmByPieceAdmin)
+	AdminGroup.GET("/actors", h.GetAllActorsAdmin)
+
+	swaggerRouter.GET("/filmlibrary/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	if err := http.ListenAndServe(":8080", swaggerRouter); err != nil {
 		log.Printf("Failed to start server: %s\n", err.Error())
 		return
 	}
