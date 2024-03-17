@@ -1,0 +1,63 @@
+{
+  "name": "John",
+  "surname": "Doe",
+  "fathername": "Smith",
+  "birthdate": "19900101",
+  "sex":"m"
+}
+
+{
+  "name": "Film Name",
+  "description": "Film Description",
+  "date": "20220101",
+  "rating": 5
+}
+
+{
+    "Key": "actor",
+    "Fragment":"иану"
+}
+
+{
+    "Key": "film",
+    "Fragment":"ица"
+}
+
+//тест сортировок:
+
+name
+date
+//ничего тоже на тест отправить
+
+//Тест добавления и изменения актёров
+{
+    "name": "Bob",
+    "surname": "Johnson",
+    "fathername": "Michael",
+    "birthdate": "19850415",
+    "sex": "M"
+}
+
+{
+    "id":6,
+    "name": "Bob Updated",
+    "surname": "Johnson Updated",
+    "fathername": "Michael Updated",
+    "birthdate": "19860120",
+    "sex": "F"
+}
+
+//users
+
+{
+    "Login": "john_doe",
+    "Password": "psjfb10",
+    "Role": 1
+}
+
+
+{
+    "Login": "alice_smith",
+    "Password": "securePssw0rd",
+    "Role": 0
+}
