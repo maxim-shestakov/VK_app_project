@@ -16,6 +16,8 @@ import (
 //
 // It takes a pointer to a structures.User struct as a parameter.
 // It returns an error if there was an issue adding the user.
+
+
 func AddUser(u *structures.User) error {
 	hashedpassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 12)
 	if err != nil {

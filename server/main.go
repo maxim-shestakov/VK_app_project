@@ -20,19 +20,17 @@ import (
 // @title VK Film library
 // @version 1.0
 // @description VK_app_film_library project
-
 // @host localhost:8080
 // @BasePath /
-
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
 // @security ApiKeyAuth
-
 // @securityDefinitions.apikey AdminKeyAuth
 // @in header
 // @name Authorization
 // @security AdminKeyAuth
+
 func init() {
 	l.Db = l.Connection()
 }
@@ -73,7 +71,8 @@ func main() {
 	AdminGroup.POST("/filmspiece", h.GetFilmByPieceAdmin)
 	AdminGroup.GET("/actors", h.GetAllActorsAdmin)
 
-	swaggerRouter.GET("/filmlibrary/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	swaggerRouter.GET("/docs", func(c *gin.Context) { c.Redirect(http.StatusFound, "swagger/index.html") })
+	swaggerRouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err := http.ListenAndServe(":8080", swaggerRouter); err != nil {
 		log.Printf("Failed to start server: %s\n", err.Error())
