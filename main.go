@@ -3,13 +3,13 @@ package main
 import (
 	"net/http"
 
-	l "VK_app/server/dbconn"
-	h "VK_app/server/handlers"
+	l "VK_app/dbconn"
+	h "VK_app/handlers"
 
-	logger "VK_app/server/logger"
+	logger "VK_app/logger"
 
-	_ "VK_app/server/docs"
-	middle "VK_app/server/middlewear"
+	_ "VK_app/docs"
+	middle "VK_app/middlewear"
 	"log"
 
 	gin "github.com/gin-gonic/gin"
@@ -71,7 +71,7 @@ func main() {
 	AdminGroup.POST("/filmspiece", h.GetFilmByPieceAdmin)
 	AdminGroup.GET("/actors", h.GetAllActorsAdmin)
 
-	swaggerRouter.GET("/docs", func(c *gin.Context) { c.Redirect(http.StatusFound, "swagger/index.html") })
+	// swaggerRouter.GET("/docs", func(c *gin.Context) { c.Redirect(http.StatusFound, "swagger/index.html") })
 	swaggerRouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err := http.ListenAndServe(":8080", swaggerRouter); err != nil {

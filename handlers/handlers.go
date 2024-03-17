@@ -7,15 +7,16 @@ import (
 	"net/http"
 	"time"
 
-	l "VK_app/server/dbconn"
-	"VK_app/server/postgresql"
-	st "VK_app/server/structures"
+	l "VK_app/dbconn"
+	"VK_app/postgresql"
+	st "VK_app/structures"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login godoc
 // @Summary Login
 // @Tags auth
 // @Description Login of a user or admin.

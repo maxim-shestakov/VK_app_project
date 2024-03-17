@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"VK_app/server/structures"
+	"VK_app/structures"
 
-	l "VK_app/server/dbconn"
+	l "VK_app/dbconn"
 
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"

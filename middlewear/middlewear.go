@@ -3,7 +3,7 @@ package middlewear
 import (
 	"net/http"
 
-	st "VK_app/server/structures"
+	st "VK_app/structures"
 
 	"log"
 
