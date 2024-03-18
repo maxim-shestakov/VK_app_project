@@ -1,11 +1,648 @@
 basePath: /
+definitions:
+  structures.Actor:
+    properties:
+      birthdate:
+        example: "19770306"
+        type: string
+      fathername:
+        example: Александрович
+        type: string
+      id:
+        example: 4
+        type: integer
+      name:
+        example: Сергей
+        type: string
+      sex:
+        example: m
+        type: string
+      surname:
+        example: Бурунов
+        type: string
+    type: object
+  structures.Film:
+    properties:
+      date:
+        example: "20161125"
+        type: string
+      description:
+        example: Описание фильма
+        type: string
+      id:
+        example: 3
+        type: integer
+      name:
+        example: Затмение
+        type: string
+      rating:
+        example: 5.8
+        type: number
+    type: object
+  structures.JSONFragment:
+    properties:
+      fragment:
+        example: иану
+        type: string
+      key:
+        example: actor
+        type: string
+    type: object
+  structures.KeySort:
+    properties:
+      key:
+        example: key
+        type: string
+      value:
+        example: name
+        type: string
+    type: object
+  structures.StatusBadRequestMessage:
+    properties:
+      message:
+        example: 'Error: bad request'
+        type: string
+    type: object
+  structures.StatusInternalServerErrorMessage:
+    properties:
+      message:
+        example: 'Error: internal server error'
+        type: string
+    type: object
+  structures.StatusNotFoundMessage:
+    properties:
+      message:
+        example: 'Error: not found'
+        type: string
+    type: object
+  structures.StatusOKMessage:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  structures.StatusUnauthorizedMessage:
+    properties:
+      message:
+        example: 'Error: unauthorized'
+        type: string
+    type: object
+  structures.User:
+    properties:
+      login:
+        example: john_doe
+        type: string
+      password:
+        example: psjfb10
+        type: string
+      role:
+        example: 1
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: VK_app_film_library project
   title: VK Film library
   version: "1.0"
-paths: {}
+paths:
+  /filmlibrary/actors:
+    get:
+      consumes:
+      - application/json
+      description: Get all actors
+      operationId: get-all-actors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: GetAllActors
+      tags:
+      - User Functions
+  /filmlibrary/admin/actor:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an actor from the database.
+      operationId: delete-actor
+      parameters:
+      - description: Actor object for deleting
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.Actor'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: actor was successfully deleted
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: DeleteActor
+      tags:
+      - Admin Functions
+    put:
+      consumes:
+      - application/json
+      description: Update an actor in the database.
+      operationId: update-actor
+      parameters:
+      - description: Actor object for updating
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.Actor'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: actor was successfully updated
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: UpdateActor
+      tags:
+      - Admin Functions
+  /filmlibrary/admin/actors:
+    get:
+      consumes:
+      - application/json
+      description: Get all actors
+      operationId: get-all-actors-admin
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: GetAllActors
+      tags:
+      - Admin Functions
+    post:
+      consumes:
+      - application/json
+      description: Add a new actor to the database.
+      operationId: add-actor
+      parameters:
+      - description: Actor object for adding
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.Actor'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: actor was successfully added
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: AddActor
+      tags:
+      - Admin Functions
+  /filmlibrary/admin/film:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a film from the database.
+      operationId: delete-film
+      parameters:
+      - description: Film object for deleting
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.Film'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: DeleteFilm
+      tags:
+      - Admin Functions
+    put:
+      consumes:
+      - application/json
+      description: Update a film in the database.
+      operationId: update-film
+      parameters:
+      - description: Film object for updating
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.Film'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: film was successfully updated
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: UpdateFilm
+      tags:
+      - Admin Functions
+  /filmlibrary/admin/films:
+    post:
+      consumes:
+      - application/json
+      description: Add a new film to the database.
+      operationId: add-film
+      parameters:
+      - description: Film object for adding
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.Film'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: film was successfully added
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: AddFilm
+      tags:
+      - Admin Functions
+  /filmlibrary/admin/filmspiece:
+    post:
+      consumes:
+      - application/json
+      description: Get films based on a JSON fragment, which contains a piece of the
+        film name or actor name.
+      operationId: get-film-by-piece-admin
+      parameters:
+      - description: JSON fragment containing a piece of the film name or actor name
+          to be searched for
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.JSONFragment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: GetFilmByPieceAdmin
+      tags:
+      - Admin Functions
+  /filmlibrary/admin/filmssorted:
+    post:
+      consumes:
+      - application/json
+      description: Get films sorted by rating, name, or date.
+      operationId: get-sorted-films-admin
+      parameters:
+      - description: 'key: rating, name, or date to be sorted by'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.KeySort'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: GetSortedFilmsAdmin
+      tags:
+      - Admin Functions
+  /filmlibrary/filmspiece:
+    post:
+      consumes:
+      - application/json
+      description: Get films based on a JSON fragment, which contains a piece of the
+        film name or actor name.
+      operationId: get-film-by-piece
+      parameters:
+      - description: JSON fragment with a piece of the film name or actor name to
+          search for
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.JSONFragment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: GetFilmByPiece
+      tags:
+      - User Functions
+  /filmlibrary/filmssorted:
+    post:
+      consumes:
+      - application/json
+      description: Get films sorted by rating, name, or date.
+      operationId: get-sorted-films
+      parameters:
+      - description: 'key: rating, name, or date to be sorted by'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.KeySort'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: GetSortedFilms
+      tags:
+      - User Functions
+  /filmlibrary/login:
+    post:
+      consumes:
+      - application/json
+      description: Login of a user or admin.
+      operationId: login
+      parameters:
+      - description: login
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user was successfully logged in
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+      summary: Login
+      tags:
+      - auth
+  /filmlibrary/registration:
+    post:
+      consumes:
+      - application/json
+      description: Registration of a new user or admin.
+      operationId: register
+      parameters:
+      - description: register
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user was successfully registered
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+      summary: Register
+      tags:
+      - auth
 securityDefinitions:
   AdminKeyAuth:
     in: header
