@@ -1,5 +1,9 @@
 ﻿# VK Film Library project
 
+## How to start project
+- Start command: docker compose up --build
+- End command: docker compose down
+
 ## cmd
 
 - CMD-directory contains main.go file.
@@ -23,6 +27,4 @@
 - Swagger documentation contains all models and handlers
 - GinRouter is used for the routing paths
 - Authorization takes place via middleware
- 
-- Start command - docker compose up --build
-- End command - docker compose down
+
