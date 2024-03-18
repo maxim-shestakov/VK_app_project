@@ -202,7 +202,7 @@ func GetFilmsActor() []structures.ActorResponse {
 //
 // It takes an integer parameter 'id' and returns an error.
 func DelActor(id int) error {
-	_, err := l.Db.Exec("DELETE FROM postgres.filmsactors.actors WHERE id=%d", id)
+	_, err := l.Db.Exec("DELETE FROM postgres.filmsactors.actors WHERE id=$1", id)
 	if err != nil {
 		log.Println("problem with deleting information about actor", err)
 		return err
@@ -220,7 +220,7 @@ func DelActor(id int) error {
 //
 //	error - an error, if any.
 func DelFilm(id int) error {
-	_, err := l.Db.Exec("DELETE FROM postgres.filmsactors.films WHERE id=%d", id)
+	_, err := l.Db.Exec("DELETE FROM postgres.filmsactors.films WHERE id=$1", id)
 	if err != nil {
 		log.Println("problem with deleting information about actor", err)
 		return err
@@ -327,6 +327,42 @@ func UpdateActor(actor structures.Actor) error {
 // It takes a structures.Actor as a parameter and returns an error.
 func AddActor(actor structures.Actor) error {
 	_, err := l.Db.Exec("INSERT INTO postgres.filmsactors.actors (name, surname, fathername, birthdate, sex) VALUES ($1, $2, $3, $4, $5)", actor.Name, actor.Surname, actor.FatherName, actor.BirthDate, actor.Sex)
+	if err != nil {
+		log.Println("problem with adding information about actor", err)
+		return err
+	}
+	return nil
+}
+
+// CheckActor checks the existence of an actor in the database.
+//
+// It takes a structures.Actor as a parameter and returns an error.
+func CheckActor(id int) error {
+	var name string
+	err := l.Db.QueryRow("SELECT name FROM postgres.filmsactors.actors WHERE id = $1", id).Scan(&name)
+	if err != nil {
+		log.Println("problem with checking information about actor", err)
+		return err
+	}
+	return nil
+}
+
+// CheckFilm checks theexistsence of a film in the database.
+//
+// Parameter: film of type structures.Film.
+// Returns an error.
+func CheckFilm(id int) error {
+	var name string
+	err := l.Db.QueryRow("SELECT name FROM postgres.filmsactors.films WHERE id = $1", id).Scan(&name)
+	if err != nil {
+		log.Println("problem with checking information about film", err)
+		return err
+	}
+	return nil
+}
+
+func AddActorFilm(actorFilm structures.ActorFilm) error {
+	_, err := l.Db.Exec("INSERT INTO postgres.filmsactors.actorsfilms (actor_id, film_id) VALUES ($1, $2)", actorFilm.ActorID, actorFilm.FilmID)
 	if err != nil {
 		log.Println("problem with adding information about actor", err)
 		return err

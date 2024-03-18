@@ -8,7 +8,7 @@ import (
 
 	logger "VK_app/pkg/logger"
 
-	_ "VK_app/api/docs"
+	_ "VK_app/docs"
 	middle "VK_app/pkg/middleware"
 	"log"
 
@@ -17,7 +17,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
-//swag init --parseDependency --parseInternal -d ./,./handlers && go run main.go - to start
+//swag init -g cmd/main.go --parseDependency --parseInternal -d ./,internal/structures,pkg/handlers && go run cmd/main.go - to start
+//docker build -t vkappimage .
+//docker run vkappimage
 
 // @title VK Film library
 // @version 1.0
@@ -72,6 +74,7 @@ func main() {
 	AdminGroup.POST("/filmssorted", h.GetSortedFilmsAdmin)
 	AdminGroup.POST("/filmspiece", h.GetFilmByPieceAdmin)
 	AdminGroup.GET("/actors", h.GetAllActorsAdmin)
+	AdminGroup.POST("/actorsfilms", h.PostActorFilm)
 
 	swaggerRouter.GET("/docs", func(c *gin.Context) { c.Redirect(http.StatusFound, "swagger/index.html") })
 	swaggerRouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -171,6 +171,54 @@ func PostActor(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "created"})
 }
 
+// PostActorFilm godoc
+// @Summary AddActorFilm
+// @Security AdminKeyAuth
+// @Tags Admin Functions
+// @Description Add a new actor film to the database.
+// @ID add-actor-film
+// @Accept json
+// @Produce json
+// @Param input body st.ActorFilm true "ActorFilm object for adding"
+// @Success 201 {object} st.StatusOKMessage "actor film was successfully added"
+// @Failure 500 {object} st.StatusInternalServerErrorMessage "internal server error"
+// @Failure 400 {object} st.StatusBadRequestMessage "bad request"
+// @Failure 404 {object} st.StatusNotFoundMessage "not found"
+// @Failure 401 {object} st.StatusUnauthorizedMessage "unauthorized"
+// @Router /filmlibrary/admin/actorsfilms [post]
+func PostActorFilm(c *gin.Context) {
+	if _, ok := c.Get("isAuthorizedAdmin"); !ok {
+		log.Println("Unauthorized admin")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized admin access denied"})
+		return
+	}
+	var actorfilm st.ActorFilm
+	if err := c.ShouldBindJSON(&actorfilm); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := postgresql.CheckActor(actorfilm.ActorID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = postgresql.CheckFilm(actorfilm.FilmID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = postgresql.AddActorFilm(actorfilm)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "created"})
+}
+
 // UpdateActor godoc
 // @Summary UpdateActor
 // @Security AdminKeyAuth
@@ -458,24 +506,26 @@ func GetSortedFilmsAdmin(c *gin.Context) {
 		return
 	}
 	var films []st.Film
-	var buf bytes.Buffer
-	_, err := buf.ReadFrom(c.Request.Body)
-	if err != nil {
+	var sortKey st.KeySort
+	if err := c.ShouldBindJSON(&sortKey); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	piece := buf.String()
-	if piece == "" || piece == "rating" {
+	if sortKey.Key != "key" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "wrong key"})
+		return
+	}
+	if sortKey.Value == "" || sortKey.Value == "rating" {
 		films = postgresql.GetFilmsSortedRating()
-	} else if piece == "name" {
+	} else if sortKey.Value == "name" {
 		films = postgresql.GetFilmsSortedName()
 	} else {
 		films = postgresql.GetFilmsSortedDate()
 	}
 	if films == nil {
 		log.Println("No films found")
-		c.JSON(http.StatusNotFound, st.StatusNotFoundMessage{Message: "No films found"}) // gin.H{"error": "No films found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "No films found"})
 		return
 	}
 	c.JSON(http.StatusOK, films)

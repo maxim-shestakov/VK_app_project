@@ -18,12 +18,18 @@ type Film struct {
 
 //swagger:model
 type Actor struct {
-	Id         int    `json:"id" example:"4"`
+	Id         int    `json:"id" example:"9"`
 	Name       string `json:"name" example:"Сергей"`
-	Surname    string `json:"surname" example:"Бурунов"`
-	FatherName string `json:"fathername" example:"Александрович"`
-	BirthDate  string `json:"birthdate" example:"19770306"`
+	Surname    string `json:"surname" example:"Баранов"`
+	FatherName string `json:"fathername" example:"Алексеевич"`
+	BirthDate  string `json:"birthdate" example:"19970306"`
 	Sex        string `json:"sex" example:"m"`
+}
+
+//swagger:model
+type ActorFilm struct {
+	ActorID int `json:"actor_id" example:"9"`
+	FilmID  int `json:"film_id" example:"3"`
 }
 
 //swagger:model

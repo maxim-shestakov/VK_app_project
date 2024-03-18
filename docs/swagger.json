@@ -303,6 +303,70 @@
                 }
             }
         },
+        "/filmlibrary/admin/actorsfilms": {
+            "post": {
+                "security": [
+                    {
+                        "AdminKeyAuth": []
+                    }
+                ],
+                "description": "Add a new actor film to the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Functions"
+                ],
+                "summary": "AddActorFilm",
+                "operationId": "add-actor-film",
+                "parameters": [
+                    {
+                        "description": "ActorFilm object for adding",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structures.ActorFilm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "actor film was successfully added",
+                        "schema": {
+                            "$ref": "#/definitions/structures.StatusOKMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/structures.StatusBadRequestMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/structures.StatusUnauthorizedMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "not found",
+                        "schema": {
+                            "$ref": "#/definitions/structures.StatusNotFoundMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/structures.StatusInternalServerErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
         "/filmlibrary/admin/film": {
             "put": {
                 "security": [
@@ -844,15 +908,15 @@
             "properties": {
                 "birthdate": {
                     "type": "string",
-                    "example": "19770306"
+                    "example": "19970306"
                 },
                 "fathername": {
                     "type": "string",
-                    "example": "Александрович"
+                    "example": "Алексеевич"
                 },
                 "id": {
                     "type": "integer",
-                    "example": 4
+                    "example": 9
                 },
                 "name": {
                     "type": "string",
@@ -864,7 +928,20 @@
                 },
                 "surname": {
                     "type": "string",
-                    "example": "Бурунов"
+                    "example": "Баранов"
+                }
+            }
+        },
+        "structures.ActorFilm": {
+            "type": "object",
+            "properties": {
+                "actor_id": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "film_id": {
+                    "type": "integer",
+                    "example": 3
                 }
             }
         },

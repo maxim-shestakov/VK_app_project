@@ -3,13 +3,13 @@ definitions:
   structures.Actor:
     properties:
       birthdate:
-        example: "19770306"
+        example: "19970306"
         type: string
       fathername:
-        example: Александрович
+        example: Алексеевич
         type: string
       id:
-        example: 4
+        example: 9
         type: integer
       name:
         example: Сергей
@@ -18,8 +18,17 @@ definitions:
         example: m
         type: string
       surname:
-        example: Бурунов
+        example: Баранов
         type: string
+    type: object
+  structures.ActorFilm:
+    properties:
+      actor_id:
+        example: 9
+        type: integer
+      film_id:
+        example: 3
+        type: integer
     type: object
   structures.Film:
     properties:
@@ -293,6 +302,47 @@ paths:
       security:
       - AdminKeyAuth: []
       summary: AddActor
+      tags:
+      - Admin Functions
+  /filmlibrary/admin/actorsfilms:
+    post:
+      consumes:
+      - application/json
+      description: Add a new actor film to the database.
+      operationId: add-actor-film
+      parameters:
+      - description: ActorFilm object for adding
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/structures.ActorFilm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: actor film was successfully added
+          schema:
+            $ref: '#/definitions/structures.StatusOKMessage'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/structures.StatusBadRequestMessage'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/structures.StatusUnauthorizedMessage'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/structures.StatusNotFoundMessage'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/structures.StatusInternalServerErrorMessage'
+      security:
+      - AdminKeyAuth: []
+      summary: AddActorFilm
       tags:
       - Admin Functions
   /filmlibrary/admin/film:
