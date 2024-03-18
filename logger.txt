@@ -1,0 +1,30 @@
+2024/03/18 00:44:07 token contains an invalid number of segments
+2024/03/18 00:46:14 token contains an invalid number of segments
+2024/03/18 00:49:44 invalid character '\u0088' after object key
+2024/03/18 00:59:54 invalid character '\u0088' after object key
+2024/03/18 01:06:55 invalid character '\u0088' after object key
+2024/03/18 01:06:55 Unauthorized admin
+2024/03/18 01:08:07 token contains an invalid number of segments
+2024/03/18 01:08:07 Unauthorized admin
+2024/03/18 01:09:48 invalid character '\u0088' after object key
+2024/03/18 01:09:48 Unauthorized admin
+2024/03/18 01:14:25 token contains an invalid number of segments
+2024/03/18 01:14:25 Unauthorized admin
+2024/03/18 01:14:36 token contains an invalid number of segments
+2024/03/18 01:14:36 Unauthorized admin
+2024/03/18 01:14:44 token contains an invalid number of segments
+2024/03/18 01:14:44 Unauthorized admin
+2024/03/18 01:15:14 user was appended successfully
+2024/03/18 09:00:45 token contains an invalid number of segments
+2024/03/18 09:00:45 Unauthorized admin
+2024/03/18 18:20:22 token contains an invalid number of segments
+2024/03/18 18:20:22 Unauthorized admin
+2024/03/18 18:44:56 problem with adding information about actor pq: column "actorid" of relation "actorsfilms" does not exist
+2024/03/18 18:44:56 pq: column "actorid" of relation "actorsfilms" does not exist
+2024/03/18 18:49:24 problem with checking information about actor sql: no rows in result set
+2024/03/18 18:49:24 sql: no rows in result set
+2024/03/18 18:49:48 problem with adding information about actor pq: duplicate key value violates unique constraint "actorsfilms_pk"
+2024/03/18 18:49:48 pq: duplicate key value violates unique constraint "actorsfilms_pk"
+2024/03/18 19:01:56 user was appended successfully
+2024/03/18 19:22:33 problem with deleting information about actor pq: column "d" does not exist
+2024/03/18 19:22:33 pq: column "d" does not exist
