@@ -24,3 +24,5 @@
 - GinRouter is used for the routing paths
 - Authorization takes place via middleware
  
+Start command - docker compose up --build
+End command - docker compose down

@@ -18,8 +18,7 @@ import (
 )
 
 //swag init -g cmd/main.go --parseDependency --parseInternal -d ./,internal/structures,pkg/handlers && go run cmd/main.go - to start
-//docker build -t vkappimage .
-//docker run vkappimage
+
 
 // @title VK Film library
 // @version 1.0
