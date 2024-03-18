@@ -25,7 +25,7 @@ func AddUser(u *structures.User) error {
 	}
 	u.Password = string(hashedpassword) //hashedpassword
 	fmt.Println(u.Password)
-	_, err = l.Db.Exec("INSERT INTO filmsactors.users (login,password,role) VALUES ($1, $2, $3)", u.Login, u.Password, u.Role)
+	_, err = l.Db.Exec("INSERT INTO users (login,password,role) VALUES ($1, $2, $3)", u.Login, u.Password, u.Role)
 	if err != nil {
 		log.Printf("addUser: %v\n", err)
 		return err
@@ -40,7 +40,7 @@ func AddUser(u *structures.User) error {
 // Returns a slice of structures.Film.
 func GetFilmsSortedRating() []structures.Film {
 	var films []structures.Film
-	rows, err := l.Db.Query("SELECT * FROM postgres.filmsactors.films ORDER BY rating DESC")
+	rows, err := l.Db.Query("SELECT * FROM films ORDER BY rating DESC")
 	if err != nil {
 		log.Println(err)
 	}
@@ -64,7 +64,7 @@ func GetFilmsSortedRating() []structures.Film {
 // Returns a slice of structures.Film.
 func GetFilmsSortedDate() []structures.Film {
 	var films []structures.Film
-	rows, err := l.Db.Query("SELECT * FROM postgres.filmsactors.films ORDER BY date DESC")
+	rows, err := l.Db.Query("SELECT * FROM films ORDER BY date DESC")
 	if err != nil {
 		log.Println(err)
 	}
@@ -87,7 +87,7 @@ func GetFilmsSortedDate() []structures.Film {
 // Returns a slice of structures.Film.
 func GetFilmsSortedName() []structures.Film {
 	var films []structures.Film
-	rows, err := l.Db.Query("SELECT * FROM postgres.filmsactors.films ORDER BY name DESC")
+	rows, err := l.Db.Query("SELECT * FROM films ORDER BY name DESC")
 	if err != nil {
 		log.Println(err)
 	}
@@ -111,7 +111,7 @@ func GetFilmsSortedName() []structures.Film {
 // []structures.Film - a slice of structures.Film containing the retrieved films.
 func GetFilmsPieceActor(piece string) []structures.Film {
 	var films []structures.Film
-	rows, err := l.Db.Query("SELECT * FROM postgres.filmsactors.films WHERE id IN (SELECT film_id FROM postgres.filmsactors.actorsfilms WHERE actor_id IN (SELECT id FROM postgres.filmsactors.actors WHERE name LIKE $1))", "%"+piece+"%")
+	rows, err := l.Db.Query("SELECT * FROM films WHERE id IN (SELECT film_id FROM actorsfilms WHERE actor_id IN (SELECT id FROM actors WHERE name LIKE $1))", "%"+piece+"%")
 	if err != nil {
 		log.Println(err)
 	}
@@ -133,7 +133,7 @@ func GetFilmsPieceActor(piece string) []structures.Film {
 // []structures.Film - a slice of Film structures containing the matching films.
 func GetFilmsPieceFilm(piece string) []structures.Film {
 	var films []structures.Film
-	rows, err := l.Db.Query("SELECT * FROM postgres.filmsactors.films WHERE name LIKE $1", "%"+piece+"%")
+	rows, err := l.Db.Query("SELECT * FROM films WHERE name LIKE $1", "%"+piece+"%")
 	if err != nil {
 		log.Println(err)
 	}
@@ -157,7 +157,7 @@ func GetFilmsActor() []structures.ActorResponse {
 	var actors = map[int]structures.ActorResponse{}
 	var actorsResponse []structures.ActorResponse
 	var idsactors []int
-	rows, err := l.Db.Query("SELECT * FROM postgres.filmsactors.actors")
+	rows, err := l.Db.Query("SELECT * FROM actors")
 	if err != nil {
 		log.Println(err)
 		return actorsResponse
@@ -174,7 +174,7 @@ func GetFilmsActor() []structures.ActorResponse {
 	}
 	for _, id := range idsactors {
 		var films []structures.FilmResponse
-		rows, err = l.Db.Query("SELECT id, name FROM postgres.filmsactors.films WHERE id IN (SELECT film_id FROM postgres.filmsactors.actorsfilms WHERE actor_id=$1)", id)
+		rows, err = l.Db.Query("SELECT id, name FROM films WHERE id IN (SELECT film_id FROM actorsfilms WHERE actor_id=$1)", id)
 		if err != nil {
 			log.Println(err)
 			return actorsResponse
@@ -202,7 +202,7 @@ func GetFilmsActor() []structures.ActorResponse {
 //
 // It takes an integer parameter 'id' and returns an error.
 func DelActor(id int) error {
-	_, err := l.Db.Exec("DELETE FROM postgres.filmsactors.actors WHERE id=$1", id)
+	_, err := l.Db.Exec("DELETE FROM actors WHERE id=$1", id)
 	if err != nil {
 		log.Println("problem with deleting information about actor", err)
 		return err
@@ -220,7 +220,7 @@ func DelActor(id int) error {
 //
 //	error - an error, if any.
 func DelFilm(id int) error {
-	_, err := l.Db.Exec("DELETE FROM postgres.filmsactors.films WHERE id=$1", id)
+	_, err := l.Db.Exec("DELETE FROM films WHERE id=$1", id)
 	if err != nil {
 		log.Println("problem with deleting information about actor", err)
 		return err
@@ -235,7 +235,7 @@ func DelFilm(id int) error {
 func UpdateFilm(film structures.Film) error {
 	args := []interface{}{}
 	counter := 1
-	query := "UPDATE postgres.filmsactors.films SET"
+	query := "UPDATE films SET"
 	if film.Name != "" {
 		query += fmt.Sprintf(" name=$%d,", counter)
 		args = append(args, film.Name)
@@ -272,7 +272,7 @@ func UpdateFilm(film structures.Film) error {
 	return nil
 }
 
-// UpdateActor updates the information of an actor in the postgres.filmsactors.actors table.
+// UpdateActor updates the information of an actor in the actors table.
 //
 // The actor parameter is the structure containing the updated actor information.
 // It should have at least one field set to update the corresponding record in the database.
@@ -281,7 +281,7 @@ func UpdateFilm(film structures.Film) error {
 func UpdateActor(actor structures.Actor) error {
 	args := []interface{}{}
 	counter := 1
-	query := "UPDATE postgres.filmsactors.actors SET"
+	query := "UPDATE actors SET"
 	if actor.Name != "" {
 		query += fmt.Sprintf(" name=$%d,", counter)
 		args = append(args, actor.Name)
@@ -326,7 +326,7 @@ func UpdateActor(actor structures.Actor) error {
 //
 // It takes a structures.Actor as a parameter and returns an error.
 func AddActor(actor structures.Actor) error {
-	_, err := l.Db.Exec("INSERT INTO postgres.filmsactors.actors (name, surname, fathername, birthdate, sex) VALUES ($1, $2, $3, $4, $5)", actor.Name, actor.Surname, actor.FatherName, actor.BirthDate, actor.Sex)
+	_, err := l.Db.Exec("INSERT INTO actors (name, surname, fathername, birthdate, sex) VALUES ($1, $2, $3, $4, $5)", actor.Name, actor.Surname, actor.FatherName, actor.BirthDate, actor.Sex)
 	if err != nil {
 		log.Println("problem with adding information about actor", err)
 		return err
@@ -339,7 +339,7 @@ func AddActor(actor structures.Actor) error {
 // It takes a structures.Actor as a parameter and returns an error.
 func CheckActor(id int) error {
 	var name string
-	err := l.Db.QueryRow("SELECT name FROM postgres.filmsactors.actors WHERE id = $1", id).Scan(&name)
+	err := l.Db.QueryRow("SELECT name FROM actors WHERE id = $1", id).Scan(&name)
 	if err != nil {
 		log.Println("problem with checking information about actor", err)
 		return err
@@ -353,7 +353,7 @@ func CheckActor(id int) error {
 // Returns an error.
 func CheckFilm(id int) error {
 	var name string
-	err := l.Db.QueryRow("SELECT name FROM postgres.filmsactors.films WHERE id = $1", id).Scan(&name)
+	err := l.Db.QueryRow("SELECT name FROM films WHERE id = $1", id).Scan(&name)
 	if err != nil {
 		log.Println("problem with checking information about film", err)
 		return err
@@ -362,7 +362,7 @@ func CheckFilm(id int) error {
 }
 
 func AddActorFilm(actorFilm structures.ActorFilm) error {
-	_, err := l.Db.Exec("INSERT INTO postgres.filmsactors.actorsfilms (actor_id, film_id) VALUES ($1, $2)", actorFilm.ActorID, actorFilm.FilmID)
+	_, err := l.Db.Exec("INSERT INTO actorsfilms (actor_id, film_id) VALUES ($1, $2)", actorFilm.ActorID, actorFilm.FilmID)
 	if err != nil {
 		log.Println("problem with adding information about actor", err)
 		return err
@@ -375,7 +375,7 @@ func AddActorFilm(actorFilm structures.ActorFilm) error {
 // Parameter: film structures.Film
 // Return type: error
 func AddFilm(film structures.Film) error {
-	_, err := l.Db.Exec("INSERT INTO postgres.filmsactors.films (name, description, date, rating) VALUES ($1, $2, $3, $4)", film.Name, film.Description, film.Date, film.Rating)
+	_, err := l.Db.Exec("INSERT INTO films (name, description, date, rating) VALUES ($1, $2, $3, $4)", film.Name, film.Description, film.Date, film.Rating)
 	if err != nil {
 		log.Println("problem with adding information about film", err)
 		return err

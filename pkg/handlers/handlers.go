@@ -36,7 +36,7 @@ func Login(c *gin.Context) {
 	}
 
 	var storedPassword string
-	row := l.Db.QueryRow("SELECT password FROM filmsactors.users WHERE login = $1", user.Login)
+	row := l.Db.QueryRow("SELECT password FROM users WHERE login = $1", user.Login)
 	err := row.Scan(&storedPassword)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Login is wrong"})
