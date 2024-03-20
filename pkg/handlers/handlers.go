@@ -39,14 +39,14 @@ func Login(c *gin.Context) {
 	row := l.Db.QueryRow("SELECT password FROM users WHERE login = $1", user.Login)
 	err := row.Scan(&storedPassword)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Login is wrong"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Login or password is wrong"})
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(user.Password))
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Password is wrong"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Login or password is wrong"})
 		return
 	}
 
