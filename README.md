@@ -26,3 +26,5 @@
  
 Start command - docker compose up --build
 End command - docker compose down
+
+EDIT: This branch was made to edit mistakes in SQL-script. In the main branch this script was from the older version and it didn't work. Now this script works and app works too. 
